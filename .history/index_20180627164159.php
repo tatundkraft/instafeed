@@ -35,38 +35,26 @@ function cacheValid()
     $cacheCreationDate = file_get_contents(CACHE_TIME_PATH);
     return ((time() - $cacheCreationDate) < CACHE_LIFETIME);
 }
-
-//get json from instagram
 $json = file_get_contents($url);
 $res = json_decode($json, true);
 $data = $res["data"];
 
-//create folders if they don't exist
 if (!is_dir(BASE_DIR . "/" . CACHE_DIR_NAME . '/')) {
     mkdir(BASE_DIR . "/" . CACHE_DIR_NAME . '/' . "images/", 0777, true);
 }
 
-//Initialise directory glob to delete unused images
-$imageFolders = glob(BASE_DIR . IMAGE_DIR_PATH . '/*', GLOB_ONLYDIR);
-$validFolders = [];
-
-//Go through all images
 foreach ($data as &$image) {
-
-    //create directory for each image, if it doesn't exist yet
     $imageDir = IMAGE_DIR_PATH . "/" . $image["id"] . "/";
     if (!is_dir(BASE_DIR . $imageDir)) {
         mkdir(BASE_DIR . $imageDir);
     }
 
-    //check for instagram carousel, set boolean to prevent duplicate creating of image
     $isCarousel = false;
     if ($image["type"] == "carousel") {
         $isCarousel = true;
-        $image = handleCarousel($image, $imageDir);
+        handleCarousel($image);
     }
 
-    //fetch image data, save local and merge new url to response object
     foreach ($image["images"] as $key => &$imageSize) {
         if (!$isCarousel) {
             $imageData = file_get_contents($imageSize["url"]);
@@ -74,22 +62,15 @@ foreach ($data as &$image) {
         }
         $imageSize["url"] = WEB_PATH . $imageDir . $key . ".jpg";
     }
-
-    //push all used image id to validFolders for deletion of unused ones
-    $itemPath = BASE_DIR . IMAGE_DIR_PATH . '/' . $image["id"];
-    if (in_array($itemPath, $imageFolders)) {
-        array_push($validFolders, $itemPath);
-    }
 }
 
-function handleCarousel($image, $imageDir)
+function handleCarousel($image)
 {
     $count = 0;
     foreach ($image["carousel_media"] as $index => &$carouselImageData) {
         if ($carouselImageData["type"] != "image") continue;
         foreach ($carouselImageData["images"] as $key => &$imageSize) {
             $imageData = file_get_contents($imageSize["url"]);
-            //if first image, skip count suffix, so image is easily reused
             if ($count === 0) {
                 file_put_contents(BASE_DIR . $imageDir . $key . ".jpg", $imageData);
                 $imageSize["url"] = WEB_PATH . $imageDir . $key . ".jpg";
@@ -100,10 +81,18 @@ function handleCarousel($image, $imageDir)
         }
         $count++;
     }
-    return $image;
 }
 
-//delete unused image folders
+$imageFolders = glob(BASE_DIR . IMAGE_DIR_PATH . '/*', GLOB_ONLYDIR);
+$validFolders = [];
+
+foreach ($data as $image) {
+    $itemPath = BASE_DIR . IMAGE_DIR_PATH . '/' . $image["id"];
+    if (in_array($itemPath, $imageFolders)) {
+        array_push($validFolders, $itemPath);
+    }
+}
+
 $toDelete = array_diff($imageFolders, $validFolders);
 foreach ($toDelete as $dir) {
     $imageDir = glob($dir . "/*");
@@ -113,7 +102,6 @@ foreach ($toDelete as $dir) {
 
 $res["data"] = $data;
 
-//return results, write cache
 $result = json_encode($res);
 file_put_contents(BASE_DIR . "/" . CACHE_DIR_NAME . '/' . $cacheName, $result);
 
