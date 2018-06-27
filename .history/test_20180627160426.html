@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test</title>
+</head>
+<body>
+    <div id="instagram">
+    </div>
+
+
+    <script type="text/javascript">
+        let endpoint = "/";
+        fetch(endpoint)
+        .then(
+            (response) => {
+                response.json().then(data => {
+                    const images = data.data;
+                    images.filter(image => {
+                        return image.tags.includes("qwsags");
+                    })
+                    let instaWrap = document.querySelector("#instagram");
+                    images.forEach((image) => {
+                        let link = image.link;
+                        let imageSrc = image.images.standard_resolution.url;
+                        let text = image.caption.text;
+                        let orientation = getOrientation(image.images.standard_resolution.width, image.images.standard_resolution.height);
+                        let name = image.caption.from.full_name;
+                        let likes = image.likes.count;
+                        
+                        let wrap = document.createElement("div");
+                        wrap.innerHTML = getTemplate(link, imageSrc, orientation, text, name, likes);
+                        instaWrap.appendChild(wrap);
+                    })
+                });
+            }
+        )
+
+
+
+        getOrientation = (w, h) => {
+            if (w > h) return "landscape";
+            if (h > w) return "portrait";
+            return "square";
+        }
+
+        getTemplate = (link, image, orientation, text, name, likes) => {
+            return `
+                <a href="${link}" target="_blank">
+                    <img src="${image}">
+                    Orientation: ${orientation}
+                </a>
+                <blockquote>
+                <span>${name}</span>: ${text}
+                <blockquote>
+                <p>${likes}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
