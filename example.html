@@ -27,9 +27,6 @@
             (response) => {
                 response.json().then(data => {
                     let  images = data.data;
-                    images = images.filter(image => {
-                        return image.tags.includes("qwstionbags");
-                    })
                     let instaWrap = document.querySelector("#instagram");
                     images.forEach((image) => {
                         let link = image.link;
