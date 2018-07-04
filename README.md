@@ -8,7 +8,7 @@ It also includes an access token generator.
 ## Getting Started
 
 1. Clone this repository.
-2. Update `config.php` with your credentials. You'll need an access token for this.. If you don't have one, see [Generate Access Token](#generate-access-token).
+2. Pastes the contents of `config.sample.php` to `config.php` and update it with your credentials. You'll need an access token for this.. If you don't have one, see [Generate Access Token](#generate-access-token).
 3. Serve it on  your local machine by pasting `php -S localhost:8000` in your terminal.
 4. Access `localhost:8000` for the json or `localhost:8000/example.html` for an example.
 

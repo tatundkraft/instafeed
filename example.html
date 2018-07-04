@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test</title>
+</head>
+<body>
+    <style>
+
+    .image-container {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+
+    }
+    </style>
+    <div id="instagram">
+    </div>
+
+
+    <script type="text/javascript">
+        let endpoint = "/";
+        fetch(endpoint)
+        .then(
+            (response) => {
+                response.json().then(data => {
+                    let  images = data.data;
+                    images = images.filter(image => {
+                        return image.tags.includes("qwstionbags");
+                    })
+                    let instaWrap = document.querySelector("#instagram");
+                    images.forEach((image) => {
+                        let link = image.link;
+                        let imageSrcs = [];
+                        if (image.type === "carousel") {
+                            image.carousel_media.forEach(imageData => {
+                                let src = imageData.images.standard_resolution.url;
+                                let orientation = getOrientation(imageData.images.standard_resolution.width, imageData.images.standard_resolution.height);
+                                imageSrcs.push({src: src, orientation: orientation});
+                            })
+                        } else {
+                            imageSrcs.push({src: image.images.standard_resolution.url, orientation: getOrientation(image.images.standard_resolution.width, image.images.standard_resolution.height)});
+                        }
+                        let text = image.caption.text;
+                        let name = image.caption.from.full_name;
+                        let likes = image.likes.count;
+                        
+                        let wrap = document.createElement("div");
+                        wrap.innerHTML = getTemplate(link, imageSrcs, text, name, likes);
+                        instaWrap.appendChild(wrap);
+                    })
+                });
+            }
+        )
+
+
+
+        getOrientation = (w, h) => {
+            if (w > h) return "landscape";
+            if (h > w) return "portrait";
+            return "square";
+        }
+
+        getTemplate = (link, images, text, name, likes) => {
+            return `
+                <a href="${link}" target="_blank">
+                <div class="image-container">
+                    ${renderImages(images)}
+                </div>
+                </a>
+                <blockquote>
+                <span>${name}</span>: ${text}
+                <blockquote>
+                <p>${likes}</p>
+            `;
+        }
+
+        renderImages = (images) => {
+            return `
+            ${images.map(image => `
+            <div>
+                <img src=${image.src}>
+                <p>Orientation = ${image.orientation}</p>
+            </div>
+            `
+            //Use join to remove commas from array
+            ).join('')}
+            `
+        }
+    </script>
+</body>
+</html>

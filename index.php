@@ -1,18 +1,11 @@
 <?php declare (strict_types = 1);
 
-const CLIENT_ID = '2d80231b815944328b271c5ef4f2e693';
-const CLIENT_SECRET = '';
-const ACCESS_TOKEN = '178618494.2d80231.823130dd9f1044aca1fe0a16d8d84e90';
-const USER_ID = '178618494';
-const BASE_DIR = __DIR__;
-const CACHE_DIR_NAME = "cache";
-const CACHE_LIFETIME = 60 * 60 * 24 * 1; //value in seconds; default: 1 day;
-const WEB_PATH = '';
+require_once 'config.php';
 
-$url = sprintf("https://api.instagram.com/v1/users/%s/media/recent?access_token=%s", USER_ID, ACCESS_TOKEN);
-
+$url = sprintf("https://api.instagram.com/v1/users/self/media/recent?access_token=%s", ACCESS_TOKEN);
 
 const IMAGE_DIR_PATH = "/" . CACHE_DIR_NAME . '/' . "images";
+const BASE_DIR =  __DIR__;
 
 $cacheName = hash("md5", $url) . ".json";
 const CACHE_TIME_PATH = BASE_DIR . "/" . CACHE_DIR_NAME . '/' . ".cache_time";
